@@ -1,0 +1,65 @@
+{% extends 'screening/base.html' %}
+{% block title %}MindWell - Corporate Mental Health Screening{% endblock %}
+{% block content %}
+<div class="hero-section text-center rounded-4 mb-5">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold mb-3">MindWell</h1>
+        <p class="lead mb-4">Anonymous mental health screening for your workplace.<br>Confidential. Actionable. Supportive.</p>
+        {% if not user.is_authenticated %}
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-4">Get Started</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-4">Log In</a>
+        </div>
+        {% else %}
+        <a href="{% url 'screening:dashboard' %}" class="btn btn-light btn-lg px-4">Go to Dashboard</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-shield-lock-fill text-primary-teal display-5 mb-3"></i>
+                <h5>Fully Anonymous</h5>
+                <p class="text-muted">Employees are identified only by unique codes. No personal data linked to screening results.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-graph-up-arrow text-primary-teal display-5 mb-3"></i>
+                <h5>Aggregate Insights</h5>
+                <p class="text-muted">HR sees department-level trends and severity distributions — never individual results.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-clipboard-data-fill text-primary-teal display-5 mb-3"></i>
+                <h5>Clinical Tools</h5>
+                <p class="text-muted">Uses validated PHQ-9 and GAD-7 questionnaires with auto-scoring and severity levels.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3">How It Works</h5>
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item border-0"><strong>Register</strong> your company and set up your account</li>
+                    <li class="list-group-item border-0"><strong>Upload employees</strong> via CSV — anonymous codes are auto-generated</li>
+                    <li class="list-group-item border-0"><strong>Create a campaign</strong> (e.g. Q2 2026) and select questionnaires</li>
+                    <li class="list-group-item border-0"><strong>Share anonymous links</strong> — employees take screening privately</li>
+                    <li class="list-group-item border-0"><strong>View aggregate results</strong> on the dashboard and download PDF reports</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

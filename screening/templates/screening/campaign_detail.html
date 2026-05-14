@@ -1,0 +1,126 @@
+{% extends 'screening/base.html' %}
+{% block title %}{{ campaign.name }} - MindWell{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'screening:campaign_list' %}">Campaigns</a></li>
+        <li class="breadcrumb-item active">{{ campaign.name }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h3 class="mb-1">{{ campaign.name }}</h3>
+        <p class="text-muted mb-0">{{ campaign.start_date|date:"M d, Y" }} – {{ campaign.end_date|date:"M d, Y" }}</p>
+    </div>
+    <div>
+        <a href="{% url 'screening:pdf_report' campaign_id=campaign.pk %}" class="btn btn-teal"><i class="bi bi-filetype-pdf me-1"></i>Download PDF Report</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center p-3">
+            <h5 class="text-muted mb-1">Total Sessions</h5>
+            <h2 class="mb-0">{{ total_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center p-3">
+            <h5 class="text-muted mb-1">Completed</h5>
+            <h2 class="mb-0">{{ completed_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center p-3">
+            <h5 class="text-muted mb-1">Completion Rate</h5>
+            <h2 class="mb-0">{{ completion_rate }}%</h2>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-white fw-semibold"><i class="bi bi-bar-chart me-2 text-primary-teal"></i>Anonymous Links</div>
+    <div class="card-body">
+        <p class="text-muted small">Each employee has a unique anonymous link. In production, these would be emailed. For the MVP, you can copy them manually.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Employee Code</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sessions %}
+                    <tr>
+                        <td><span class="code-badge small">{{ s.employee.code_short }}</span></td>
+                        <td>{{ s.employee.department }}</td>
+                        <td>
+                            {% if s.is_completed %}
+                            <span class="badge bg-success">Completed</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not s.is_completed %}
+                            <button class="btn btn-sm btn-outline-secondary copy-link" data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'screening:screening' link_id=s.unique_link_id %}">
+                                <i class="bi bi-clipboard me-1"></i>Copy
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if dept_avg %}
+<div class="card shadow">
+    <div class="card-header bg-white fw-semibold"><i class="bi bi-building me-2 text-primary-teal"></i>Department Breakdown</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Department</th>
+                        <th>Responses</th>
+                        <th>Avg Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dept_avg %}
+                    <tr>
+                        <td>{{ d.department }}</td>
+                        <td>{{ d.count }}</td>
+                        <td>
+                            <span class="badge {% if d.avg_score <= 4 %}bg-success{% elif d.avg_score <= 9 %}bg-warning text-dark{% elif d.avg_score <= 14 %}bg-warning{% else %}bg-danger{% endif %}">{{ d.avg_score }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.copy-link').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        navigator.clipboard.writeText(this.dataset.link);
+        this.innerHTML = '<i class="bi bi-check me-1"></i>Copied!';
+        setTimeout(() => {
+            this.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copy';
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}

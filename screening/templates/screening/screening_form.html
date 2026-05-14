@@ -1,0 +1,70 @@
+{% extends 'screening/base.html' %}
+{% block title %}Mental Health Screening - MindWell{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-person-check display-3 text-primary-teal"></i>
+                <h3 class="mt-2">Welcome, Employee #{{ employee_code }}</h3>
+                <p class="text-muted mb-0">Campaign: {{ session.campaign.name }}</p>
+                <p class="text-muted">Your responses are completely anonymous.</p>
+            </div>
+        </div>
+
+        <form method="post" id="screeningForm" novalidate>
+            {% csrf_token %}
+
+            {% for q in questionnaires %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">{{ q.name }}</h5>
+                    <small class="text-muted">{{ q.description }}</small>
+                </div>
+                <div class="card-body">
+                    {% for question in questions %}
+                    {% if question.questionnaire == q %}
+                    <div class="mb-4 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <p class="fw-medium mb-2">{{ question.order }}. {{ question.text }}</p>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q_{{ question.id }}" id="q_{{ question.id }}_0" value="0" required>
+                                    <label class="form-check-label small" for="q_{{ question.id }}_0">0 – Not at all</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q_{{ question.id }}" id="q_{{ question.id }}_1" value="1">
+                                    <label class="form-check-label small" for="q_{{ question.id }}_1">1 – Several days</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q_{{ question.id }}" id="q_{{ question.id }}_2" value="2">
+                                    <label class="form-check-label small" for="q_{{ question.id }}_2">2 – More than half</label>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q_{{ question.id }}" id="q_{{ question.id }}_3" value="3">
+                                    <label class="form-check-label small" for="q_{{ question.id }}_3">3 – Nearly every day</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="text-center mb-5">
+                <button type="submit" class="btn btn-teal btn-lg px-5" onclick="return confirm('Are you sure you want to submit your responses? This action cannot be undone.')">
+                    <i class="bi bi-check-circle me-2"></i>Submit Screening
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

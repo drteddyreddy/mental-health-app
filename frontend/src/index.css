@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+  --color-mindwell: #0d6e6e;
+  --color-mindwell-dark: #064242;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+.severity-minimal {
+  @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+}
+
+.severity-mild {
+  @apply bg-amber-100 text-amber-800 border-amber-200;
+}
+
+.severity-moderate {
+  @apply bg-orange-100 text-orange-800 border-orange-200;
+}
+
+.severity-severe {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.code-badge {
+  @apply font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm tracking-wider;
+}

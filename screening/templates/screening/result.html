@@ -1,0 +1,82 @@
+{% extends 'screening/base.html' %}
+{% block title %}Your Results - MindWell{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center p-4">
+                <i class="bi bi-clipboard2-check-fill display-3 text-primary-teal"></i>
+                <h3 class="mt-2">Thank You, Employee #{{ employee_code }}</h3>
+                <p class="text-muted mb-0">Your responses have been recorded for <strong>{{ session.campaign.name }}</strong>.</p>
+                <p class="text-muted">No personal data has been stored with your results.</p>
+            </div>
+        </div>
+
+        {% for qr in questionnaire_results %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">{{ qr.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <span class="display-6 fw-bold">{{ qr.score }}</span>
+                    <span class="text-muted">/ {{ qr.max }}</span>
+                    <div class="mt-2">
+                        <span class="badge fs-6 px-3 py-2 
+                            {% if qr.severity == 'Minimal' %}bg-success
+                            {% elif qr.severity == 'Mild' %}bg-warning text-dark
+                            {% elif qr.severity == 'Moderate' %}bg-warning
+                            {% else %}bg-danger{% endif %}">
+                            {{ qr.severity }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="card shadow mb-4">
+            <div class="card-body p-4">
+                <div class="text-center mb-3">
+                    <h5>Combined Score</h5>
+                    <span class="display-4 fw-bold">{{ overall_score }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if is_pro %}
+        {% for q_name, recs in recommendations.items %}
+        {% if recs %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2 text-warning"></i>Recommendations – {{ q_name }}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for rec in recs %}
+                    <li class="list-group-item px-0"><i class="bi bi-arrow-right-circle text-primary-teal me-2"></i>{{ rec }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <i class="bi bi-star text-muted display-6"></i>
+                <p class="text-muted mt-2 mb-0">Personalized recommendations are available with the <strong>Pro</strong> plan.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mb-5">
+            {% if user.is_authenticated %}
+            <a href="{% url 'screening:dashboard' %}" class="btn btn-teal">Back to Dashboard</a>
+            {% else %}
+            <p class="text-muted small">This link can be used to view your results again. Please save or bookmark it.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'screening/base.html' %}
+{% block title %}Dashboard - MindWell{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1">{{ company.name }} Dashboard</h3>
+        <p class="text-muted mb-0">{{ company.get_tier_display }} Plan</p>
+    </div>
+    <div>
+        <a href="{% url 'screening:campaign_create' %}" class="btn btn-teal"><i class="bi bi-plus-lg me-1"></i>New Campaign</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm stat-card border-start border-primary-teal border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Employees</h6>
+                        <h3 class="mb-0">{{ total_employees }}</h3>
+                    </div>
+                    <i class="bi bi-people-fill text-primary-teal fs-2 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm stat-card border-start border-success border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Campaigns</h6>
+                        <h3 class="mb-0">{{ total_campaigns }}</h3>
+                    </div>
+                    <i class="bi bi-megaphone-fill text-success fs-2 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm stat-card border-start border-warning border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Sessions</h6>
+                        <h3 class="mb-0">{{ total_sessions }}</h3>
+                    </div>
+                    <i class="bi bi-clipboard-check-fill text-warning fs-2 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm stat-card border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Completion</h6>
+                        <h3 class="mb-0">{{ completion_rate }}%</h3>
+                    </div>
+                    <i class="bi bi-pie-chart-fill text-info fs-2 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold"><i class="bi bi-building me-2 text-primary-teal"></i>Average Scores by Department</div>
+            <div class="card-body">
+                {% if dept_stats %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Department</th>
+                                <th>Employees</th>
+                                <th>Sessions</th>
+                                <th>Avg Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in dept_stats %}
+                            <tr>
+                                <td>{{ d.department|default:"Unassigned" }}</td>
+                                <td>{{ d.emp_count }}</td>
+                                <td>{{ d.session_count }}</td>
+                                <td>
+                                    {% if d.avg_score is not None %}
+                                    <span class="badge {% if d.avg_score <= 4 %}bg-success{% elif d.avg_score <= 9 %}bg-warning text-dark{% elif d.avg_score <= 14 %}bg-warning{% else %}bg-danger{% endif %}">{{ d.avg_score }}</span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No data yet. Create a campaign and upload employees to get started.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold"><i class="bi bi-bar-chart-fill me-2 text-primary-teal"></i>Severity Distribution</div>
+            <div class="card-body">
+                {% if severity_dist %}
+                {% with total=severity_dist.Minimal|add:severity_dist.Mild|add:severity_dist.Moderate|add:severity_dist.Severe %}
+                {% if total > 0 %}
+                {% for label, count in severity_dist.items %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="fw-medium">{{ label }}</span>
+                        <span>{{ count }} ({% widthratio count total 100 %}%)</span>
+                    </div>
+                    <div class="progress" style="height: 12px; border-radius: 6px;">
+                        <div class="progress-bar {% if label == 'Minimal' %}bg-success{% elif label == 'Mild' %}bg-warning{% elif label == 'Moderate' %}bg-orange{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {% widthratio count total 100 %}%" 
+                             aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="{{ total }}">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0">No completed screenings yet.</p>
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                <p class="text-muted mb-0">No data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold"><i class="bi bi-graph-down me-2 text-primary-teal"></i>Trends Across Campaigns</div>
+            <div class="card-body">
+                {% if campaign_trends %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Sessions</th>
+                                <th>Avg Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ct in campaign_trends %}
+                            <tr>
+                                <td>{{ ct.name }}</td>
+                                <td>{{ ct.session_count }}</td>
+                                <td>
+                                    {% if ct.avg_score is not None %}
+                                    <span class="badge {% if ct.avg_score <= 4 %}bg-success{% elif ct.avg_score <= 9 %}bg-warning text-dark{% elif ct.avg_score <= 14 %}bg-warning{% else %}bg-danger{% endif %}">{{ ct.avg_score }}</span>
+                                    {% else %}
+                                    <span class="text-muted">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if ct.session_count > 0 %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No responses</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No campaigns created yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

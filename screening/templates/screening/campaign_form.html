@@ -1,0 +1,43 @@
+{% extends 'screening/base.html' %}
+{% block title %}{{ is_new|yesno:"New Campaign,Edit Campaign" }} - MindWell{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-1">{{ is_new|yesno:"Create New Campaign,Edit Campaign" }}</h3>
+                <p class="text-muted mb-4">Set up a screening campaign and select which questionnaires to use.</p>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.widget_type == 'checkboxselectmultiple' %}
+                        <div class="border rounded p-3 bg-light">
+                            {% for checkbox in field %}
+                            <div class="form-check">
+                                {{ checkbox.tag }}
+                                <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% elif field.widget_type == 'checkbox' %}
+                        <div class="form-check">
+                            {{ field }}
+                            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        </div>
+                        {% else %}
+                        {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-teal">{{ is_new|yesno:"Create Campaign,Save Changes" }}</button>
+                    <a href="{% url 'screening:campaign_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
