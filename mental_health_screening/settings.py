@@ -61,12 +61,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "mental_health_screening.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.environ.get("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3")),
+DB_HOST = os.environ.get("DJANGO_DB_HOST")
+if DB_HOST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DJANGO_DB_NAME", "mindwell"),
+            "USER": os.environ.get("DJANGO_DB_USER", "mindwell"),
+            "PASSWORD": os.environ.get("DJANGO_DB_PASSWORD", "mindwell"),
+            "HOST": DB_HOST,
+            "PORT": os.environ.get("DJANGO_DB_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.environ.get("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3")),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},

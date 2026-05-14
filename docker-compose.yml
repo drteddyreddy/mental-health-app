@@ -1,4 +1,19 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mindwell
+      POSTGRES_USER: mindwell
+      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD:-mindwell}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mindwell"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -11,13 +26,16 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - db_data:/data
       - ./media:/app/media
       - ./staticfiles:/app/staticfiles
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
       - DJANGO_DEBUG=False
-      - DJANGO_DB_PATH=/data/db.sqlite3
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=mindwell
+      - DJANGO_DB_USER=mindwell
+      - DJANGO_DB_PASSWORD=${DJANGO_DB_PASSWORD:-mindwell}
+      - DJANGO_DB_PORT=5432
       - CORS_ALLOWED_ORIGINS=http://localhost:80
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -25,44 +43,56 @@ services:
       - EMAIL_FROM=${EMAIL_FROM:-noreply@mindwell.app}
       - USE_EMAIL=${USE_EMAIL:-False}
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   celery-worker:
     build: .
     restart: unless-stopped
     command: celery -A mental_health_screening worker --loglevel=info
-    volumes:
-      - db_data:/data
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
       - DJANGO_DEBUG=False
-      - DJANGO_DB_PATH=/data/db.sqlite3
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=mindwell
+      - DJANGO_DB_USER=mindwell
+      - DJANGO_DB_PASSWORD=${DJANGO_DB_PASSWORD:-mindwell}
+      - DJANGO_DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
       - EMAIL_FROM=${EMAIL_FROM:-noreply@mindwell.app}
       - USE_EMAIL=${USE_EMAIL:-False}
     depends_on:
-      - redis
-      - backend
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   celery-beat:
     build: .
     restart: unless-stopped
     command: celery -A mental_health_screening beat --loglevel=info
-    volumes:
-      - db_data:/data
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
       - DJANGO_DEBUG=False
+      - DJANGO_DB_HOST=postgres
+      - DJANGO_DB_NAME=mindwell
+      - DJANGO_DB_USER=mindwell
+      - DJANGO_DB_PASSWORD=${DJANGO_DB_PASSWORD:-mindwell}
+      - DJANGO_DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
       - EMAIL_FROM=${EMAIL_FROM:-noreply@mindwell.app}
       - USE_EMAIL=${USE_EMAIL:-False}
     depends_on:
-      - redis
-      - backend
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     build: ./frontend
@@ -73,4 +103,4 @@ services:
       - backend
 
 volumes:
-  db_data:
+  pg_data:
