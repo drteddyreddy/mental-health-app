@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('screening', '0002_company_assigned_questionnaires_company_is_active_and_more'),
+        ("screening", "0002_company_assigned_questionnaires_company_is_active_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='employee',
-            options={'ordering': ['name']},
+            name="employee",
+            options={"ordering": ["name"]},
         ),
     ]

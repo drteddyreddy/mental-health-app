@@ -9,8 +9,7 @@ repos:
     hooks:
       - id: eslint
         name: eslint
-        entry: npm run lint
-        language: node
-        types: [javascript, jsx, typescript, tsx]
-        working_directory: frontend
+        entry: powershell -Command "cd frontend; npm run lint"
+        language: system
+        files: frontend/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false

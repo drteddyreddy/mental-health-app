@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Company, Employee, Campaign, Questionnaire, Question, ScreeningSession, ScreeningResponse
+
+from .models import (
+    Campaign,
+    Company,
+    Employee,
+    Question,
+    Questionnaire,
+    ScreeningResponse,
+    ScreeningSession,
+)
 
 admin.site.register(Company)
 admin.site.register(Employee)

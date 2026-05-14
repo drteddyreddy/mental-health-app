@@ -1,11 +1,13 @@
 import logging
+
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 try:
     from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, From, To
+    from sendgrid.helpers.mail import From, Mail, To
+
     SENDGRID_AVAILABLE = True
 except ImportError:
     SENDGRID_AVAILABLE = False
@@ -13,42 +15,44 @@ except ImportError:
 
 def send_email(to_email: str, subject: str, html_content: str) -> bool:
     if not settings.USE_EMAIL:
-        logger.info(f'Email disabled. Would send to {to_email}: {subject}')
+        logger.info(f"Email disabled. Would send to {to_email}: {subject}")
         return False
 
     if not SENDGRID_AVAILABLE:
-        logger.warning('SendGrid package not installed')
+        logger.warning("SendGrid package not installed")
         return False
 
     if not settings.SENDGRID_API_KEY:
-        logger.warning('SENDGRID_API_KEY not configured')
+        logger.warning("SENDGRID_API_KEY not configured")
         return False
 
     try:
         message = Mail(
-            from_email=From(settings.EMAIL_FROM, 'MindWell'),
+            from_email=From(settings.EMAIL_FROM, "MindWell"),
             to_emails=To(to_email),
             subject=subject,
             html_content=html_content,
         )
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
-        logger.info(f'Email sent to {to_email}: {response.status_code}')
+        logger.info(f"Email sent to {to_email}: {response.status_code}")
         return response.status_code in (200, 201, 202)
     except Exception as e:
-        logger.error(f'Failed to send email to {to_email}: {e}')
+        logger.error(f"Failed to send email to {to_email}: {e}")
         return False
 
 
-def send_screening_link(company_email: str, company_name: str, campaign_name: str, links: list[dict]) -> bool:
-    rows = ''.join(
+def send_screening_link(
+    company_email: str, company_name: str, campaign_name: str, links: list[dict]
+) -> bool:
+    rows = "".join(
         f'<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0;font-family:monospace;font-size:13px">{l["code"]}</td>'
         f'<td style="padding:8px;border-bottom:1px solid #e2e8f0">{l["department"]}</td>'
         f'<td style="padding:8px;border-bottom:1px solid #e2e8f0"><a href="{l["url"]}" style="color:#0d6e6e;text-decoration:underline;font-size:13px">Open Screening</a></td></tr>'
         for l in links
     )
 
-    html = f'''
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head><meta charset="utf-8"></head>
@@ -76,12 +80,12 @@ def send_screening_link(company_email: str, company_name: str, campaign_name: st
     </div>
     </body>
     </html>
-    '''
-    return send_email(company_email, f'New Screening Campaign: {campaign_name}', html)
+    """
+    return send_email(company_email, f"New Screening Campaign: {campaign_name}", html)
 
 
 def send_reminder(hr_email: str, company_name: str, campaign_name: str, pending_count: int) -> bool:
-    html = f'''
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head><meta charset="utf-8"></head>
@@ -96,5 +100,7 @@ def send_reminder(hr_email: str, company_name: str, campaign_name: str, pending_
     </div>
     </body>
     </html>
-    '''
-    return send_email(hr_email, f'Reminder: {pending_count} Pending Screenings — {campaign_name}', html)
+    """
+    return send_email(
+        hr_email, f"Reminder: {pending_count} Pending Screenings — {campaign_name}", html
+    )

@@ -1,15 +1,22 @@
 from rest_framework import serializers
+
 from screening.models import (
-    Company, Employee, Campaign, Questionnaire,
-    Question, ScreeningSession, ScreeningResponse,
-    UserProfile, GradingConfig,
+    Campaign,
+    Company,
+    Employee,
+    GradingConfig,
+    Question,
+    Questionnaire,
+    ScreeningResponse,
+    ScreeningSession,
+    UserProfile,
 )
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ['id', 'text', 'order', 'max_score']
+        fields = ["id", "text", "order", "max_score"]
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
@@ -17,13 +24,13 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Questionnaire
-        fields = ['id', 'name', 'description', 'scoring_type', 'max_score', 'metadata', 'questions']
+        fields = ["id", "name", "description", "scoring_type", "max_score", "metadata", "questions"]
 
 
 class GradingConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = GradingConfig
-        fields = ['id', 'rules']
+        fields = ["id", "rules"]
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -31,24 +38,39 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ['id', 'name', 'industry', 'tier', 'is_active',
-                  'assigned_questionnaires', 'created_at']
-        read_only_fields = ['id', 'tier', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "industry",
+            "tier",
+            "is_active",
+            "assigned_questionnaires",
+            "created_at",
+        ]
+        read_only_fields = ["id", "tier", "created_at"]
 
     def get_assigned_questionnaires(self, obj):
-        return list(obj.assigned_questionnaires.values_list('id', flat=True))
+        return list(obj.assigned_questionnaires.values_list("id", flat=True))
 
 
 class CompanyDetailSerializer(serializers.ModelSerializer):
     assigned_questionnaires_data = QuestionnaireSerializer(
-        source='assigned_questionnaires', many=True, read_only=True
+        source="assigned_questionnaires", many=True, read_only=True
     )
     grading_config = serializers.SerializerMethodField()
 
     class Meta:
         model = Company
-        fields = ['id', 'name', 'industry', 'tier', 'is_active',
-                  'assigned_questionnaires_data', 'grading_config', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "industry",
+            "tier",
+            "is_active",
+            "assigned_questionnaires_data",
+            "grading_config",
+            "created_at",
+        ]
 
     def get_grading_config(self, obj):
         try:
@@ -59,12 +81,12 @@ class CompanyDetailSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.ReadOnlyField(source='user.username')
-    email = serializers.ReadOnlyField(source='user.email')
+    username = serializers.ReadOnlyField(source="user.username")
+    email = serializers.ReadOnlyField(source="user.email")
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'email', 'role']
+        fields = ["id", "username", "email", "role"]
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -72,17 +94,25 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'name', 'department', 'designation',
-                  'anonymous_code', 'code_short', 'is_active', 'created_at']
-        read_only_fields = ['id', 'anonymous_code', 'code_short', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "department",
+            "designation",
+            "anonymous_code",
+            "code_short",
+            "is_active",
+            "created_at",
+        ]
+        read_only_fields = ["id", "anonymous_code", "code_short", "created_at"]
 
 
 class EmployeeUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
 
     def validate_file(self, value):
-        if not value.name.endswith('.csv'):
-            raise serializers.ValidationError('File must be a CSV.')
+        if not value.name.endswith(".csv"):
+            raise serializers.ValidationError("File must be a CSV.")
         return value
 
 
@@ -93,10 +123,18 @@ class CampaignListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = ['id', 'name', 'start_date', 'end_date', 'is_active',
-                  'questionnaires', 'total_sessions', 'completed_sessions',
-                  'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "start_date",
+            "end_date",
+            "is_active",
+            "questionnaires",
+            "total_sessions",
+            "completed_sessions",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
     def get_total_sessions(self, obj):
         return obj.sessions.count()
@@ -110,23 +148,28 @@ class CampaignDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = ['id', 'name', 'start_date', 'end_date', 'is_active',
-                  'questionnaires', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "start_date",
+            "end_date",
+            "is_active",
+            "questionnaires",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
 
 class CampaignCreateSerializer(serializers.ModelSerializer):
-    questionnaire_ids = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True
-    )
+    questionnaire_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
 
     class Meta:
         model = Campaign
-        fields = ['name', 'start_date', 'end_date', 'is_active', 'questionnaire_ids']
+        fields = ["name", "start_date", "end_date", "is_active", "questionnaire_ids"]
 
     def create(self, validated_data):
-        q_ids = validated_data.pop('questionnaire_ids')
-        company = self.context['company']
+        q_ids = validated_data.pop("questionnaire_ids")
+        company = self.context["company"]
         campaign = Campaign.objects.create(company=company, **validated_data)
         campaign.questionnaires.set(Questionnaire.objects.filter(id__in=q_ids))
         for emp in Employee.objects.filter(company=company, is_active=True):
@@ -135,29 +178,34 @@ class CampaignCreateSerializer(serializers.ModelSerializer):
 
 
 class ScreeningSessionSerializer(serializers.ModelSerializer):
-    employee_code = serializers.ReadOnlyField(source='employee.code_short')
-    employee_department = serializers.ReadOnlyField(source='employee.department')
+    employee_code = serializers.ReadOnlyField(source="employee.code_short")
+    employee_department = serializers.ReadOnlyField(source="employee.department")
     unique_link = serializers.SerializerMethodField()
     is_completed = serializers.ReadOnlyField()
 
     class Meta:
         model = ScreeningSession
-        fields = ['id', 'employee_code', 'employee_department',
-                  'unique_link', 'is_completed', 'completed_at', 'created_at']
+        fields = [
+            "id",
+            "employee_code",
+            "employee_department",
+            "unique_link",
+            "is_completed",
+            "completed_at",
+            "created_at",
+        ]
 
     def get_unique_link(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request:
-            return request.build_absolute_uri(
-                f'/screening/{obj.unique_link_id}/'
-            )
+            return request.build_absolute_uri(f"/screening/{obj.unique_link_id}/")
         return str(obj.unique_link_id)
 
 
 class ScreeningResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScreeningResponse
-        fields = ['question', 'score']
+        fields = ["question", "score"]
 
 
 class ScreeningSubmitSerializer(serializers.Serializer):
